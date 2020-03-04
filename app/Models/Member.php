@@ -5,17 +5,15 @@ namespace App\Models;
 use App\Helpers\Traits\HasFile;
 use App\Helpers\Traits\ListableTrait;
 use Carbon\Carbon;
-use DB;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class Member extends Authenticatable implements MustVerifyEmail
 {
-    use HasFile;
     use Notifiable;
-    use ListableTrait;
 
     public const TYPE_ADMIN = "admin";
     public const TYPE_EDITOR = "editor";
@@ -24,6 +22,8 @@ class Member extends Authenticatable implements MustVerifyEmail
     public const STATUS_ACTIVE = "active";
     public const STATUS_BLOCKED = "blocked";
     public const STATUS_UNVERIFIED = "unverified";
+
+    protected $table = "members";
 
     /**
      * The "root" path where file related to this model will be stored
