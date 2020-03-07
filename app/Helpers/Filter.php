@@ -42,28 +42,34 @@ class Filter
 
     /**
      * Generate status finding query corresponding to model
+     *
+     * @param mixed ...$columns
      */
-    public function includeExcludeStatusFilter(): void
+    public function includeFilter(...$columns): void
     {
-        # Collect the requested status params
-        $includeStatus = $this->request->includeStatus ?? [];
-        $excludeStatus = $this->request->excludeStatus ?? [];
+        foreach ($columns as $column) {
+            # Collect the requested status params
+            $includeData = $this->request->input($column) ?? [];
 
-        # Generate the status finding query corresponding to model
-        $this->model = !empty($includeStatus) ? $this->model->whereIn("status", $includeStatus) : $this->model->whereNotIn("status", $excludeStatus);
+            # Generate the status finding query corresponding to model
+            if (!empty($includeData)) $this->model = $this->model->whereIn($column, $includeData);
+        }
     }
 
     /**
      * Generate type finding query corresponding to model
+     *
+     * @param array $columns
      */
-    public function includeExcludeTypeFilter(): void
+    public function excludeFilter(...$columns): void
     {
-        # Collect the requested type params
-        $includeTypes = $this->request->includeTypes ?? [];
-        $excludeTypes = $this->request->excludeTypes ?? [];
+        foreach ($columns as $column) {
+            # Collect the requested type params
+            $excludeData = $this->request->input("exclude_" . $column) ?? [];
 
-        # Generate the status finding query corresponding to model
-        $this->model = !empty($includeStatus) ? $this->model->whereIn("type", $includeTypes) : $this->model->whereNotIn("type", $excludeTypes);
+            # Generate the status finding query corresponding to model
+            if (!empty($excludeData)) $this->model = $this->model->whereNotIn("type", $excludeData);
+        }
     }
 
     public function dateFilter()
@@ -78,7 +84,7 @@ class Filter
         } elseif (empty($endDate) && !empty($startDate)) {
             $current     = Carbon::now()->format("Y-m-d");
             $this->model = $this->model->whereBetween("created_at", [$startDate, $current]);
-        } else {
+        } elseif (!empty($endDate) && !empty($startDate)) {
             $this->model = $this->model->whereBetween("created_at", [$startDate, $endDate]);
         }
     }
@@ -94,10 +100,12 @@ class Filter
         $text = $this->request->text;
 
         # Generate the text finding query corresponding to model
-        $this->model = $this->model->where(function ($query) use ($columns, $text) {
-            foreach ($columns as $column) {
-                $query->orWhere($column, 'like', '%' . $text . '%');
-            }
-        });
+        if (!empty($text)) {
+            $this->model = $this->model->where(function ($query) use ($columns, $text) {
+                foreach ($columns as $column) {
+                    $query->orWhere($column, 'like', '%' . $text . '%');
+                }
+            });
+        }
     }
 }

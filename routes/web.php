@@ -18,20 +18,20 @@ Route::get("/filter", function () {
 
     $request = new Illuminate\Http\Request();
     $request->replace([
-        "text"          => "Balistreri",
-        "includeTypes"  => ["admin"],
-        "excludeTypes"  => ["client", "editor"],
-        "includeStatus" => ["active", "block"],
-        "excludeStatus" => ["unapproved"],
-        "startDate"     => "2020-02-29",
-        "endDate"       => "2020-03-29",
+        "type"           => ["admin"],
+        "text"           => "Balistreri",
+        "startDate"      => "2020-02-29",
+        "endDate"        => "2020-03-29",
+        "exclude_status" => ["unapproved"],
+        "status"         => ["active", "block"],
+        "exclude_type"   => ["client", "editor"],
     ]);
 
     $filter = new \App\Helpers\Filter(new \App\Models\Member(), $request);
 
     $filter->dateFilter();
-    $filter->includeExcludeTypeFilter();
-    $filter->includeExcludeStatusFilter();
+    $filter->includeFilter("status", "type");
+    $filter->excludeFilter("status", "type");
     $filter->textFilter("first_name", "last_name", "company_name", "email");
 
     dd($filter->paginate());
